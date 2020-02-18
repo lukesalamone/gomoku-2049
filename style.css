@@ -74,3 +74,30 @@ body {
     background-color: #0f1;
     cursor: unset;
 }
+
+#footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 20px;
+    color: #f0f;
+    font-family: monospace;
+}
+
+#footer a {
+    color: #f0f;
+    margin-right: 30px;
+}
+
+.left {
+    display: inline-block;
+    float: left;
+}
+
+.right {
+    display: inline-block;
+    float: right;
+}

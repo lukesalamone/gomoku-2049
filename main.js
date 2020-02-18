@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // make a random move adjascent to human
     async function makeCpuMove(){
-        let {row, col} = ai.getNextMove(board.getOccupiedSquares());
+        let [row, col] = ai.getNextMove(board.getOccupiedSquares());
         let square = board.getSquare(row, col);
         square.onCpuSelect();
     }
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // check diagonals
         let len = tempBoard.length;
-        for(let i=4; i<20; i++){
+        for(let i=4; i<len; i++){
             let diagonal1 = [];
             let diagonal2 = [];
             let diagonal3 = [];

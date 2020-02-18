@@ -57,4 +57,42 @@ class Board{
     getRow(num){
         return this.matrix[num];
     }
+
+    // remove empty squares that only necessary squares are evaluated
+    // optional padding will be applied around played squares
+    static pruneMatrix(matrix, padding){
+        let left = 0, right = 0, top = 0, bottom = 0;
+
+        for(let i=0; i<matrix.length; i++){
+            for(let j=0; j<matrix[i].length; j++){
+                if(matrix[i][j]){
+                    left = Math.min(left, i);
+                    right = Math.max(right, i);
+                    top = Math.min(top, j);
+                    bottom = math.max(bottom, j);
+                }
+            }
+        }
+
+        if(padding){
+            left = Math.max(0, left - padding);
+            right = Math.min(20, right + padding);
+            top = Math.max(0, top - padding);
+            bottom = Math.min(20, bottom + padding);
+        }
+
+        let copy = [];
+
+        for(let i=left; i<right; i++){
+            let row = [];
+
+            for(let j=top; j<bottom; j++){
+                row.push(matrix[i][j]);
+            }
+
+            copy.push(row);
+        }
+
+        return copy;
+    }
 }

@@ -11,18 +11,23 @@
 class GameAI {
     constructor(board){
         this.board = board;
-        this.winScore = 1000000;
     }
 
     getNextMove(humanMoves){
+        let matrix = this.board.getRawMatrix();
+        let score = staticEval(matrix);
+
         return getRandomAdjacent(humanMoves);
     }
 
 }
 
-function getRandomAdjacent(humanMoves){
-    let set = humanMoves.reduce((a, c) => {
-        let s = c.getSurrounding();
+function getRandomAdjacent(moves){
+    let set = moves.reduce((a, c) => {
+        let s = c.getSurrounding().map(m => {
+            return [m.row, m.col];
+        });
+
         return new Set([...a, ...s]);
     }, new Set());
 
@@ -31,36 +36,131 @@ function getRandomAdjacent(humanMoves){
     return [...set][index];
 }
 
-function horizontalScore(){
+function staticEval(matrix){
+    let a = horizontalScore(matrix);
+    let b = verticalScore(matrix);
+    let c = diagonalScore(matrix);
 
+    console.log('SCORES horizontal: %s, vertical: %s, diagonal: %s', a, b, c);
+
+    return a + b + c;
 }
 
-function verticalScore(){
+// perform static analysis on the rows of the board
+function horizontalScore(matrix){
+    let score = 0;
 
+    for(let i=0; i<matrix.length; i++){
+        let current = 0;
+        let streak = 0;
+
+        for(let j=0; j<matrix[i].length; j++){
+            ({current, streak, score} = scoreConsecutive(matrix[i][j], current, streak, score));
+        }
+
+        if(current !== 0){
+            score += current * adjacentBlockScore(consecutive);
+        }
+    }
+
+    return -1 * score;
+}
+
+// static analysis on columns
+function verticalScore(matrix){
+    let score = 0;
+
+    for(let i=0; i<matrix.length; i++){
+        let current = 0;
+        let streak = 0;
+
+        for(let j=0; j<matrix[i].length; j++){
+            ({current, streak, score} = scoreConsecutive(matrix[j][i], current, streak, score));
+        }
+
+        if(current !== 0){
+            score += current * adjacentBlockScore(streak);
+        }
+    }
+
+    return -1 * score;
+}
+
+// static analysis on diagonals
+function diagonalScore(matrix){
+    return 0;
+
+    let len = matrix.length, diagonal1 = [], diagonal2 = [],
+            diagonal3 = [], diagonal4 = [];
+
+    for(let i=4; i<len; i++){
+        for(let j=0; j<len; j++){
+            diagonal1.push(matrix[i-j][j]);
+            diagonal2.push(matrix[len - 1 - j][len - 1 - i - j]);
+            diagonal3.push(matrix[j][len - 1 - i + j]);
+            diagonal4.push(matrix[len - 1 - i + j][j]);
+        }
+    }
+
+    return rowScore(diagonal1) + rowScore(diagonal2)
+        + rowScore(diagonal3) + rowScore(diagonal4);
+
+    // score a row for consecutive blocks
+    function rowScore(row){
+        let current = 0, streak = 0, score = 0;
+        for(let i=0; i<row.length; i++){
+            ({current, streak, score} = scoreConsecutive(row[i], current, streak, score));
+        }
+
+        if(current !== 0){
+            score += current * adjacentBlockScore(consecutive);
+        }
+
+        return -1 * score;
+    }
 }
 
 // score a consecutive group of blocks
-/**
-    count:  number in a row
-
-
-*/
-function adjacentBlockScore(count, blocks, isAiTurn){
-    const winGuaranteed = 1000000;
-    if (blocks == 2 && count < 5) return 0;
-
-    switch(count){
-        case 1:
-            return 1;
-        case 2:
-            return blocks ? 3 : (isAiTurn ? 7 : 5);
-        case 3:
-            return blocks ? (isAiTurn ? 10 : 5) : (isAiTurn ? 50000 : 200);
-        case 4:
-            return isAiTurn ? winGuaranteed : (blocks ? 200 : winGuaranteed/4);
-        case 5:
-            return this.winScore;
+function scoreConsecutive(block, current, streak, score){
+    if(block !== current){
+        if(current === 0){
+            current = block;
+            consecutive = 1;
+        } else {
+            score += current * adjacentBlockScore(consecutive);
+            current = block;
+            consecutive = 1;
+        }
+    } else {
+        if(block !== 0) consecutive++;
     }
 
-    return this.winScore * 2;
+    return {
+        'current': current,
+        'streak': streak,
+        'score': score
+    };
+}
+
+function rowIsEmpty(row){
+    for(let i=0; i<row.length; i++){
+        if(row[i] !== 0) return false;
+    }
+
+    return true;
+}
+
+/** *
+    * score a consecutive group of blocks
+    *   count:  number in a row
+    *
+*/
+function adjacentBlockScore(count){
+    const scoreMatrix = [0, 2, 4, 8, 16, 32];
+
+    try {
+        return scoreMatrix[count];
+    } catch(e){
+        return -1;
+    }
 }
