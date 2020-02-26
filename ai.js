@@ -6,7 +6,8 @@
     *
     *   Execute a WebWorker to prevent freezing the main UI.
 */
-
+let totalCalcs = 0;
+let cache = new Map();
 
 class GameAI {
     constructor(board){
@@ -15,10 +16,13 @@ class GameAI {
 
     getNextMove(){
         let matrix = this.board.getRawMatrix();
+        let off = {};
+        ({matrix, off} = Board.pruneMatrix(matrix, 3));
         let score = staticEval(matrix);
 
-        // return bestMove(matrix);
-        return randomMove();
+        let move = bestMove(matrix);
+        console.log('total calcs: %s', totalCalcs)
+        return [move[0]+off.y, move[1]+off.x];
     }
 
 }
@@ -50,53 +54,80 @@ function bestMove(matrix){
 }
 
 function minimax(matrix, depth, isAiTurn){
+    if(checkCache(arguments) !== false){
+        return cache.get(matrix).get(depth).get(isAiTurn);
+    }
+
+    totalCalcs++;
     let winner = Board.checkWinner(matrix);
     if(winner){
-        // return 64 if ai wins, -64 if human wins
-        return -64 * winner;
+        // return 9999 if ai wins, -9999 if human wins
+        return -9999 * winner;
     }
 
-    // stop at depth 8
-    if(depth === 8){
-        return staticEval(matrix);
+    // stop at depth 10
+    if(depth >= 10){
+        let eval = staticEval(matrix);
+
+        putCache(arguments, eval);
+        return eval;
     }
 
+    // if AI's turn, we want to maximize score
     let bestScore = (isAiTurn ? -1 : 1) * Infinity;
 
-    for (let i=0; i<3; i++) {
-        for (let j=0; j<3; j++) {
+    for (let i=0; i<matrix.length; i++) {
+        for (let j=0; j<matrix[i].length; j++) {
             if (!matrix[i][j]) {    // if not occupied
                 matrix[i][j] = (isAiTurn ? -1 : 1);
-                let score = minimax(matrix, ++depth, !isAiTurn);
+                let score = minimax(matrix, depth+1, !isAiTurn);
                 matrix[i][j] = 0;
-                bestScore = isAiTurn ? Math.max(score, bestScore) : Math.min(isAiTurn);
+                bestScore = isAiTurn ? Math.max(score, bestScore) : Math.min(score, bestScore);
             }
         }
     }
 
+    putCache(arguments, bestScore);
     return bestScore;
-}
 
-function getRandomAdjacent(moves){
-    let set = moves.reduce((a, c) => {
-        let s = c.getSurrounding().map(m => {
-            return [m.row, m.col];
-        });
+    function checkCache(args){
+        let [a, b, c] = args;
 
-        return new Set([...a, ...s]);
-    }, new Set());
+        if(cache.has(a) && cache.get(a).has(b) && cache.get(a).get(b).has(c)){
+            return cache.get(a).get(b).get(c);
+        } else {
+            return false;
+        }
+    }
 
-    let index = Math.floor(Math.random() * set.size);
+    function putCache(args, result){
+        let [a, b, c] = args;
 
-    return [...set][index];
+        if(!cache.has(a)){
+            cache.set(a, new Map());
+            cache.get(a).set(b, new Map());
+            cache.get(a).get(b).set(c, result);
+            return;
+        }
+
+        if(!cache.get(a).has(b)){
+            cache.get(a).set(b, new Map());
+            cache.get(a).get(b).set(c, result);
+            return;
+        }
+
+        if(!cache.get(a).get(b).has(c)){
+            cache.get(a).get(b).set(c, result);
+        }
+    }
 }
 
 function staticEval(matrix){
-    let a = horizontalScore(matrix);
-    let b = verticalScore(matrix);
-    let c = diagonalScore(matrix);
+    let a = horizontalScore(matrix) || 0;
+    let b = verticalScore(matrix) || 0;
+    let c = diagonalScore(matrix) || 0;
 
-    console.log('SCORES horizontal: %s, vertical: %s, diagonal: %s', a, b, c);
+    // console.log('SCORES horizontal: %s, vertical: %s, diagonal: %s', a, b, c);
 
     return a + b + c;
 }
@@ -125,11 +156,11 @@ function horizontalScore(matrix){
 function verticalScore(matrix){
     let score = 0;
 
-    for(let i=0; i<matrix.length; i++){
+    for(let i=0; i<matrix[0].length; i++){
         let current = 0;
         let streak = 0;
 
-        for(let j=0; j<matrix[i].length; j++){
+        for(let j=0; j<matrix.length; j++){
             ({current, streak, score} = scoreConsecutive(matrix[j][i], current, streak, score));
         }
 
@@ -177,7 +208,7 @@ function diagonalScore(matrix){
             res.d3.score + res.d4.score;
     }
 
-    return score;
+    return -1 * score;
 
     function process(block, obj){
         return scoreConsecutive(block, obj.current, obj.streak, obj.score);

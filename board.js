@@ -41,8 +41,6 @@ class Board{
         } catch(e){
             console.log(e);
         }
-
-        // return this.matrix[row][col];
     }
 
     // return array of rows of Squares
@@ -72,15 +70,15 @@ class Board{
     // remove empty squares that only necessary squares are evaluated
     // optional padding will be applied around played squares
     static pruneMatrix(matrix, padding){
-        let left = 0, right = 0, top = 0, bottom = 0;
+        let left = Infinity, right = 0, top = Infinity, bottom = 0;
 
         for(let i=0; i<matrix.length; i++){
             for(let j=0; j<matrix[i].length; j++){
                 if(matrix[i][j]){
-                    left = Math.min(left, i);
-                    right = Math.max(right, i);
-                    top = Math.min(top, j);
-                    bottom = math.max(bottom, j);
+                    top = Math.min(top, i);
+                    bottom = Math.max(bottom, i);
+                    left = Math.min(left, j);
+                    right = Math.max(right, j);
                 }
             }
         }
@@ -94,20 +92,26 @@ class Board{
 
         let copy = [];
 
-        for(let i=left; i<right; i++){
+        for(let i=left; i<=right; i++){
             let row = [];
 
-            for(let j=top; j<bottom; j++){
+            for(let j=top; j<=bottom; j++){
                 row.push(matrix[i][j]);
             }
 
             copy.push(row);
         }
 
-        return copy;
+        return {
+            'matrix': copy,
+            'off': {
+                'x': left,
+                'y': top
+            }
+        };
     }
 
-    // return 1 or -1 if game is over, 0 for not over
+    // return 1 if human wins, -1 if AI wins, 0 for no winner
     static checkWinner(matrix){
         for(let i=0; i<matrix.length; i++){
             let res = {hor:{}, ver:{}, dg1:{}, dg2:{}, dg3:{}, dg4:{}};
