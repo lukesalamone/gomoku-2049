@@ -1,130 +1,95 @@
+let board = null;
+let ai = null;
+let animating = false;
+
 document.addEventListener("DOMContentLoaded", async () => {
 
-    let board = new Board(document.getElementById('board'), onSquareClicked);
-    let ai = new GameAI(board);
+    document.querySelector('#about').onclick = openAbout;
+    document.querySelector('.overlay .close').onclick = closeAbout;
+    document.querySelector('#play-again').onclick = onNewGameClicked;
 
-    let currentPlayer = "human";
-    let unoccupied = [];
-    let humanMoves = [];
-
-    function onSquareClicked(y, x){
-        return function(event){
-            let square = board.getSquare(y, x);
-
-            if(square.isOccupied()){
-                return;
-            }
-
-            // unoccupied = unoccupied.filter(n => n !== (20*y + x));
-            humanMoves.push(new Square(y, x));
-
-            square.setVal(1);
-            square.getDomObj().classList.add('orange');
-
-            makeCpuMove();
-
-            let winner = gameIsOver();
-
-            if(!!winner){
-                console.log('game over. %s is the winner', (winner === 1) ? 'human' : 'cpu');
-            }
-        };
-    }
-
-    // make a random move adjascent to human
-    async function makeCpuMove(){
-        let [row, col] = ai.getNextMove(board.getOccupiedSquares());
-        let square = board.getSquare(row, col);
-        square.onCpuSelect();
-    }
-
-    // return 1 or -1 if game is over, 0 for not over
-    function gameIsOver(){
-        let tempBoard = board.getRawMatrix();
-
-        // check rows
-        for(let i=0; i<tempBoard.length; i++){
-            let result = checkRow(tempBoard[i]);
-
-            if(!!result){
-                return result;
-            }
-        }
-
-        // check columns
-        for(let i=0; i<tempBoard[0].length; i++){
-            let column = tempBoard.reduce((a, c) => {
-                a.push(c[i]);
-                return a;
-            }, []);
-
-            let result = checkRow(column);
-            if(!!result){
-                return result;
-            }
-        }
-
-        // check diagonals
-        let len = tempBoard.length;
-        for(let i=4; i<len; i++){
-            let diagonal1 = [];
-            let diagonal2 = [];
-            let diagonal3 = [];
-            let diagonal4 = [];
-
-            for(let j=0; j<=i; j++){
-                diagonal1.push(tempBoard[i-j][j]);
-                diagonal2.push(tempBoard[len - 1 - j][len - 1 - i - j]);
-                diagonal3.push(tempBoard[j][len - 1 - i + j]);
-                diagonal4.push(tempBoard[len - 1 - i + j][j]);
-            }
-
-            let result = checkRow(diagonal1);
-            if(!!result){
-                return result;
-            }
-
-            result = checkRow(diagonal2);
-            if(!!result){
-                return result;
-            }
-
-            result = checkRow(diagonal3);
-            if(!!result){
-                return result;
-            }
-
-            result = checkRow(diagonal4);
-            if(!!result){
-                return result;
-            }
-        }
-
-        return 0;
-
-        function checkRow(row){
-            let streak = 0;
-            let currentPlayer = 0;
-
-            for(let i=0; i<row.length; i++){
-                if(!!row[i]){
-                    if(row[i] === currentPlayer){
-                        streak++;
-                    } else {
-                        streak = 1;
-                        currentPlayer = row[i];
-                    }
-                } else {
-                    streak = 0;
-                    currentPlayer = 0;
-                }
-
-                if(streak === 5){
-                    return currentPlayer;
-                }
-            }
-
-            return 0;
-        }
-    }
+    resetGame();
 });
+
+function onSquareClicked(y, x){
+    return async function(event){
+        if(animating){
+            return;
+        }
+
+        let square = board.getSquare(y, x);
+
+        if(square.isOccupied()){
+            return;
+        }
+
+        // assign human to square
+        square.setVal(1);
+        square.getDomObj().classList.add('orange');
+        let winner = Board.checkWinner(board.getRawMatrix());
+
+        if(winner){
+            console.log('game over. %s is the winner', (winner === 1) ? 'human' : 'cpu');
+            onGameOver(winner);
+            return;
+        }
+
+        // make cpu move
+        let [row, col] = ai.getNextMove(board.getOccupiedSquares());
+        square = board.getSquare(row, col);
+        await pause(500);
+        square.onCpuSelect();
+        winner = Board.checkWinner(board.getRawMatrix());
+
+        if(winner){
+            console.log('game over. %s is the winner', (winner === 1) ? 'human' : 'cpu');
+            onGameOver(winner);
+        }
+    };
+}
+
+function openAbout(){
+    document.querySelector('.overlay').style.display = 'block';
+    document.querySelector('.overlay .about').style.display = 'block';
+}
+
+function closeAbout(){
+    document.querySelector('.overlay').style.display = 'none';
+    document.querySelector('.overlay .about').style.display = 'none';
+}
+
+function onGameOver(winner){
+    let text = `${winner > 0 ? 'human' : 'cpu' } is the winner.`;
+
+    document.querySelector('.overlay .message').textContent = text;
+
+    document.querySelector('.overlay').style.display = 'block';
+    document.querySelector('.overlay .gameover').style.display = 'block';
+}
+
+function onNewGameClicked(){
+    document.querySelector('.overlay').style.display = 'none';
+    document.querySelector('.overlay .gameover').style.display = 'none';
+
+    resetGame();
+}
+
+async function resetGame(){
+    if(board){
+        board.delete();
+    }
+
+    board = new Board(document.getElementById('board'), onSquareClicked);
+    ai = new GameAI(board);
+
+    animating = true;
+    board.showAnimation().then(() => {
+        animating = false;
+    });
+}
+
+function pause(millis){
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, millis);
+    });
+}

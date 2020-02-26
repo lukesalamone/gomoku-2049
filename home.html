@@ -16,11 +16,39 @@
         <div id="footer">
             <div class="left">
                 <a href="https://lukesalamone.com">home</a>
-                <a href="#">about</a>
+                <a id="about" href="#">about</a>
                 <a href="https://github.com/lukesalamone/gomoku-2049">source</a>
             </div>
             <div class="right">
                 <span>last updated at <span>1234</span></span>
+            </div>
+        </div>
+
+        <div class="overlay" style="display:none">
+            <div class="gameover" style="display:none">
+                <h1>Game Over</h1>
+                <p class="message"></p>
+                <a id="play-again">&raquo; play again &laquo;</a>
+                <div class="options">
+                    <a title="my homepage" href="https://lukesalamone.com">home</a>
+                    <a title="about this game" id="about" href="#">about</a>
+                    <a title="source code" href="https://github.com/lukesalamone/gomoku-2049">code</a>
+                </div>
+            </div>
+
+            <div class="about" style="display:none">
+                <span class="close">close</span>
+
+                <h1>About this game</h1>
+                <div class="text-holder">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce condimentum urna rutrum pellentesque dignissim. Donec accumsan, neque in laoreet lobortis, dui diam commodo mi, id porttitor lacus elit sit amet dui. Mauris lectus dui, vehicula eu finibus ac, mollis a eros. Ut aliquam orci porta, consequat ex eu, dignissim tortor. Nullam tincidunt magna quis sem congue, at feugiat nunc vestibulum. Ut eget augue posuere, vulputate neque nec, eleifend tortor. Donec non maximus turpis. Sed in pulvinar neque, a faucibus turpis. Curabitur orci dolor, placerat in bibendum eget, ornare non leo. In sodales magna quis nulla efficitur, ac sagittis neque interdum. Duis fermentum fermentum nulla eu laoreet.</p>
+
+                    <p>Maecenas dapibus tincidunt metus quis gravida. Nunc est felis, faucibus eget feugiat a, vehicula et ipsum. Suspendisse suscipit ex id auctor luctus. Phasellus nec vehicula nulla. Duis fermentum, quam gravida dapibus iaculis, nulla leo placerat nibh, ultrices ultricies risus erat nec nunc. Cras non nunc turpis. Praesent viverra auctor iaculis.</p>
+
+                    <p>Vestibulum efficitur urna ut leo luctus eleifend. Duis ut pellentesque magna. Etiam non massa quis metus tempor varius. Vestibulum bibendum dui sed ante bibendum lobortis. Aliquam malesuada tristique neque, quis posuere eros scelerisque vel. Integer eget orci lacus. Mauris aliquam sollicitudin dignissim. Donec ornare at lorem ac ultrices.</p>
+
+                    <p>Donec id semper velit. Quisque finibus malesuada eros, id gravida neque. Etiam mattis justo eu vestibulum tristique. Nulla placerat, lectus sit amet cursus efficitur, sem nisl placerat magna, nec mattis erat enim in metus. Etiam et lectus sagittis, dictum urna non, consequat elit. In nec ex non odio congue hendrerit. Aenean dignissim lacinia arcu, ut interdum tortor tempor eget. Nullam sed bibendum mi. In convallis magna arcu, ut egestas eros hendrerit a.</p>
+                </div>
             </div>
         </div>
     </body>

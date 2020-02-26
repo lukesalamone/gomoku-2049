@@ -3,6 +3,7 @@ const SIZE = 20;
 class Board{
     constructor(parentNode, onSquareClickedCb) {
         this.matrix = [];
+        this.parentNode = parentNode;
 
         // generate board
         for(let i=0; i<SIZE; i++){
@@ -23,6 +24,10 @@ class Board{
         }
     }
 
+    getSize(){
+        return SIZE;
+    }
+
     getOccupiedSquares(){
         return this.matrix.reduce((arr, row) => {
             arr.push(...row.filter(square => square.isOccupied()));
@@ -31,7 +36,13 @@ class Board{
     }
 
     getSquare(row, col) {
-        return this.matrix[row][col];
+        try {
+            return this.matrix[row][col];
+        } catch(e){
+            console.log(e);
+        }
+
+        // return this.matrix[row][col];
     }
 
     // return array of rows of Squares
@@ -94,5 +105,119 @@ class Board{
         }
 
         return copy;
+    }
+
+    // return 1 or -1 if game is over, 0 for not over
+    static checkWinner(matrix){
+        for(let i=0; i<matrix.length; i++){
+            let res = {hor:{}, ver:{}, dg1:{}, dg2:{}, dg3:{}, dg4:{}};
+
+            // build results obj
+            for(let key in res){
+                res[key] = {streak:0, current:0};
+            }
+
+            for(let j=0; j<matrix[i].length; j++){
+                // check horizontals
+                let winner = check(matrix[i][j], res.hor);
+                if(winner) return winner;
+
+                // check verticals
+                winner = check(matrix[j][i], res.ver);
+                if(winner) return winner;
+
+                // check all four diagonals
+                if(i < 4 || j > i) continue;
+
+                let len = matrix.length;
+                winner = check(matrix[i-j][j], res.dg1);
+                if(winner) return winner;
+
+                winner = check(matrix[len-1-j][i-j], res.dg2);
+                if(winner) return winner;
+
+                winner = check(matrix[j][len-1-i+j], res.dg3);
+                if(winner) return winner;
+
+                winner = check(matrix[len-1-i+j][len-1-j], res.dg4);
+                if(winner) return winner;
+            }// end inner for loop
+        }// end outer for loop
+
+        return 0;
+
+        function check(square, obj){
+            if(!!square){
+                if(square === obj.current){
+                    obj.streak++;
+                } else {
+                    obj.streak = 1;
+                    obj.current = square;
+                }
+            } else {
+                obj.streak = 0;
+                obj.current = 0;
+            }
+
+            if(obj.streak === 5){
+                // a player has won
+                return obj.current;
+            } else {
+                // no player has won
+                return 0;
+            }
+        }
+
+        function highlight(a, b){
+            board.getSquare(a, b).twinkle();
+        }
+    }
+
+    showAnimation(){
+        return new Promise(async (resolve, reject) => {
+            // twinkle board
+            let boardSize = board.getSize();
+
+            // create list of numbers from 0 -> square of board size
+            let squareList = Array.from({
+                length: boardSize * boardSize
+            }, (k,v) => v);
+
+            // shuffle list
+            squareList.sort(() => Math.random() - 0.5);
+
+            for(let i=0; i<squareList.length; i+=10){
+                let promises = Array.from({length: 10}, (k,v)=>v);
+                promises = promises.map(a => {
+                    let num = squareList[i+a];
+                    let x = num % boardSize, y = Math.floor(num / boardSize);
+                    return board.getSquare(y, x).twinkle();
+                });
+
+                // twinkle square
+                await Promise.all(promises);
+            }
+
+            // shuffle list again
+            squareList.sort(() => Math.random() - 0.5);
+
+            for(let i=squareList.length-1; i>0; i-=10){
+                let promises = Array.from({length: 10}, (k,v)=>v);
+                promises = promises.map(a => {
+                    let num = squareList[i-a];
+                    let x = num % boardSize, y = Math.floor(num / boardSize);
+                    return board.getSquare(y, x).untwinkle();
+                });
+
+                // untwinkle squares
+                await Promise.all(promises);
+            }
+
+            resolve();
+        });
+    }
+
+    delete(){
+        this.parentNode.innerHTML = '';
     }
 }

@@ -60,4 +60,22 @@ class Square{
     isValid(){
         return this.row < 20 && this.row > -1 && this.col < 20 && this.col > -1;
     }
+
+    twinkle(){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                this.getDomObj().classList.add('white');
+                resolve(this);
+            }, 5);
+        });
+    }
+
+    untwinkle(){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                this.getDomObj().classList.remove('white');
+                resolve(this);
+            }, 5);
+        });
+    }
 }
