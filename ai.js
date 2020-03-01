@@ -18,8 +18,8 @@ class GameAI {
         return new Promise((resolve, reject) => {
 
             let matrix = this.board.getRawMatrix();
-            let off = {};
-            ({matrix, off} = Board.pruneMatrix(matrix, 2));
+            // let off = {};
+            // ({matrix, off} = Board.pruneMatrix(matrix, 2));
 
             let worker = new Worker('worker.js');
 
@@ -30,7 +30,8 @@ class GameAI {
 
                 let [y, x] = event.data;
 
-                resolve( [y+off.y, x+off.x] );
+                // resolve( [y+off.y, x+off.x] );
+                resolve([y, x]);
                 worker.terminate();
             }
 

@@ -12,25 +12,48 @@ function bestMove(matrix){
     let bestScore = -Infinity;
     let move;
 
+    let squares = getSquaresToCheck(matrix);
+
+    for(let i=0; i<squares.length; i++){
+        let [x, y] = squares[i];
+        matrix[x][y] = -1;
+        let score = minimax(matrix, 0, false);
+
+        if(score > bestScore){
+            bestScore = score;
+            move = [x, y];
+        }
+    }
+
+    return move;
+}
+
+function getSquaresToCheck(matrix){
+    let list = [];
+
     for(let i=0; i<matrix.length; i++){
         for(let j=0; j<matrix[i].length; j++){
-            if(!matrix[i][j]){
-                matrix[i][j] = -1;
-                let score = minimax(matrix, 0, false);
-                matrix[i][j] = 0;
-
-                if(score > bestScore){
-                    bestScore = score;
-                    move = {i, j};
-                }
+            if(!matrix[i][j] && isTouchingOccupied(i, j)){
+                list.push([i, j]);
             }
         }
     }
 
-    matrix[move.i][move.j] = -1;
-    // console.log(matrix);
+    return list;
 
-    return [move.i, move.j];
+    function isTouchingOccupied(i, j){
+        return (occupied(i+1, j) || occupied(i-1, j) || occupied(i, j+1)
+            || occupied(i, j-1) || occupied(i+1, j+1) || occupied(i-1, j+1)
+            || occupied(i-1, j-1) || occupied(i+1, j-1));
+
+        function occupied(x, y){
+            try {
+                return matrix[x][y];
+            } catch(e){
+                return false;
+            }
+        }
+    }
 }
 
 function minimax(matrix, depth, isAiTurn){
@@ -46,7 +69,7 @@ function minimax(matrix, depth, isAiTurn){
         return -9999 * winner;
     }
 
-    // stop at depth 5
+    // stop at depth 2
     if(depth >= 2){
         let eval = staticEval(matrix);
 
@@ -57,30 +80,20 @@ function minimax(matrix, depth, isAiTurn){
     // if AI's turn, we want to maximize score
     let bestScore = isAiTurn ? -Infinity : Infinity;
 
-    for (let i=0; i<matrix.length; i++) {
-        for (let j=0; j<matrix[i].length; j++) {
-            if (!matrix[i][j]) {    // if not occupied
+    let squares = getSquaresToCheck(matrix);
+    for(let i=0; i<squares.length; i++){
+        let [x, y] = squares[i];
+        matrix[x][y] = (isAiTurn ? -1 : 1);
 
-                if(i === 4 && j === 4){
-                    console.log()
-                }
-
-
-                matrix[i][j] = (isAiTurn ? -1 : 1);
-
-                let score = minimax(matrix, depth+1, !isAiTurn);
-                matrix[i][j] = 0;
-                bestScore = isAiTurn ? Math.max(score, bestScore) : Math.min(score, bestScore);
-            }
-        }
+        let score = minimax(matrix, depth+1, !isAiTurn);
+        matrix[x][y] = 0;
+        bestScore = isAiTurn ? Math.max(score, bestScore) : Math.min(score, bestScore);
     }
 
     putCache(arguments, bestScore);
     return bestScore;
 
     function checkCache(args){
-        // return false;
-
         let [a, b, c] = args;
         a = JSON.stringify(a);
 
@@ -92,8 +105,6 @@ function minimax(matrix, depth, isAiTurn){
     }
 
     function putCache(args, result){
-        // return;
-
         if(typeof result !== 'number' || isNaN(result)){
             return;
         }
@@ -124,8 +135,6 @@ function staticEval(matrix){
     let a = horizontalScore(matrix) || 0;
     let b = verticalScore(matrix) || 0;
     let c = diagonalScore(matrix) || 0;
-
-    // console.log('SCORES horizontal: %s, vertical: %s, diagonal: %s', a, b, c);
 
     return a + b + c;
 

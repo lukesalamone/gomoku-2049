@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function onSquareClicked(y, x){
     return async function(event){
-        if(animating || thinking){
+        if(animating || document.querySelector('#board').classList.contains('thinking')){
             return;
         }
 
@@ -35,12 +35,12 @@ function onSquareClicked(y, x){
             return;
         }
 
-        thinking = true;
+        document.querySelector('#board').classList.add('thinking');
 
         // make cpu move
         let [row, col] = await ai.getNextMove(board.getOccupiedSquares());
 
-        thinking = false;
+        document.querySelector('#board').classList.remove('thinking');
 
         square = board.getSquare(row, col);
         await pause(500);

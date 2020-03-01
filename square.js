@@ -23,7 +23,6 @@ class Square{
 
     getDomObj(){
         return this.domObj;
-        // return document.getElementById(this.row + '_' + this.col);
     }
 
     onHumanSelect(){
