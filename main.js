@@ -35,7 +35,7 @@ function onSquareClicked(y, x){
         }
 
         // make cpu move
-        let [row, col] = ai.getNextMove(board.getOccupiedSquares());
+        let [row, col] = await ai.getNextMove(board.getOccupiedSquares());
         square = board.getSquare(row, col);
         await pause(500);
         square.onCpuSelect();
