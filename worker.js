@@ -1,13 +1,10 @@
+let cache = new Map();
+
+
 onmessage = event => {
-    console.log('Message received from main script');
-
-    let fn = event.data.checkWinner;
-    this.checkWinner = new Function(fn.args, fn.body);
-
+    this.checkWinner = new Function(event.data.fn.args, event.data.fn.body);
     let move = bestMove(event.data.matrix);
-
-    // let move = [5,5];
-
+    cache = new Map();
     postMessage(move);
 }
 
@@ -31,7 +28,7 @@ function bestMove(matrix){
     }
 
     matrix[move.i][move.j] = -1;
-    console.log(matrix);
+    // console.log(matrix);
 
     return [move.i, move.j];
 }
@@ -82,7 +79,7 @@ function minimax(matrix, depth, isAiTurn){
     return bestScore;
 
     function checkCache(args){
-        return false;
+        // return false;
 
         let [a, b, c] = args;
         a = JSON.stringify(a);
@@ -95,7 +92,7 @@ function minimax(matrix, depth, isAiTurn){
     }
 
     function putCache(args, result){
-        return;
+        // return;
 
         if(typeof result !== 'number' || isNaN(result)){
             return;

@@ -92,52 +92,56 @@ class Board{
         }
 
         // always return square matrix
-        let diff = (right-left) - (bottom-top);
-
-        if(diff){
+        // left: 0, right: 10, top: 0, bottom: 8
+        if((right-left) - (bottom-top)){
             console.log('normalizing pruned size');
-        }
+            console.log('left: %s, right: %s, top: %s, bottom: %s', left, right, top, bottom);
 
-        // todo do this more efficiently
+            let width = right - left;
+            let height = bottom - top;
+            let size = Math.max(width, height);
 
-        // matrix is wider than tall
-        while(diff > 0){
-            if(diff%2 === 0){
-                if(top > 0){
-                    top--;
-                    diff--;
-                } else {
-                    bottom += diff;
-                    diff = 0;
+            if(width !== size){
+                // add half to left and right
+                let x = size - width;
+                left = Math.max(0, left - Math.floor(x/2));
+                right = Math.min(19, right + Math.floor(x/2));
+                x = size - (right - left);
+
+                if(x){
+                    if(left){
+                        left -= x;
+                    } else {
+                        right += x;
+                    }
                 }
-            } else {
-                if(bottom < MATRIX_SIZE - 1){
-                    bottom++;
-                    diff--;
-                } else {
-                    top -= diff;
-                    diff = 0;
+            } else if(height !== size){
+                let x = size - height;
+                top = Math.max(0, top - Math.floor(x/2));
+                bottom = Math.min(19, bottom + Math.floor(x/2));
+                x = size - (bottom - top);
+
+                if(x){
+                    if(top){
+                        top -= x;
+                    } else {
+                        bottom += x;
+                    }
                 }
             }
-        }
 
-        // matrix is taller than wide
-        while(diff < 0){
-            if(left > 0){
-                left--;
-                diff--;
-            } else {
-                right += -1 * diff;
-                diff = 0;
+            // check results
+            if((bottom-top) !== (right-left)){
+                console.log('error!! unequal sizes!!!')
             }
         }
 
         let copy = [];
 
-        for(let i=left; i<=right; i++){
+        for(let i=top; i<=bottom; i++){
             let row = [];
 
-            for(let j=top; j<=bottom; j++){
+            for(let j=left; j<=right; j++){
                 row.push(matrix[i][j]);
             }
 

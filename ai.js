@@ -19,12 +19,10 @@ class GameAI {
 
             let matrix = this.board.getRawMatrix();
             let off = {};
-            ({matrix, off} = Board.pruneMatrix(matrix, 3));
-            // let score = staticEval(matrix);
+            ({matrix, off} = Board.pruneMatrix(matrix, 2));
 
             let worker = new Worker('worker.js');
 
-            // move these to a new file :)
             worker.onmessage = event => {
                 if(!event.data || event.data.length < 2){
                     reject('could not calculate move');
@@ -42,7 +40,7 @@ class GameAI {
 
             worker.postMessage({
                 matrix: matrix,
-                checkWinner: serializedFn(Board.checkWinner)
+                fn: serializedFn(Board.checkWinner)
             });
         });
 
