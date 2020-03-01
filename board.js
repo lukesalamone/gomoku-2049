@@ -71,6 +71,7 @@ class Board{
     // optional padding will be applied around played squares
     static pruneMatrix(matrix, padding){
         let left = Infinity, right = 0, top = Infinity, bottom = 0;
+        const MATRIX_SIZE = 20;
 
         for(let i=0; i<matrix.length; i++){
             for(let j=0; j<matrix[i].length; j++){
@@ -85,9 +86,50 @@ class Board{
 
         if(padding){
             left = Math.max(0, left - padding);
-            right = Math.min(20, right + padding);
+            right = Math.min(MATRIX_SIZE, right + padding);
             top = Math.max(0, top - padding);
-            bottom = Math.min(20, bottom + padding);
+            bottom = Math.min(MATRIX_SIZE, bottom + padding);
+        }
+
+        // always return square matrix
+        let diff = (right-left) - (bottom-top);
+
+        if(diff){
+            console.log('normalizing pruned size');
+        }
+
+        // todo do this more efficiently
+
+        // matrix is wider than tall
+        while(diff > 0){
+            if(diff%2 === 0){
+                if(top > 0){
+                    top--;
+                    diff--;
+                } else {
+                    bottom += diff;
+                    diff = 0;
+                }
+            } else {
+                if(bottom < MATRIX_SIZE - 1){
+                    bottom++;
+                    diff--;
+                } else {
+                    top -= diff;
+                    diff = 0;
+                }
+            }
+        }
+
+        // matrix is taller than wide
+        while(diff < 0){
+            if(left > 0){
+                left--;
+                diff--;
+            } else {
+                right += -1 * diff;
+                diff = 0;
+            }
         }
 
         let copy = [];

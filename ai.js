@@ -26,9 +26,6 @@ class GameAI {
 
             // move these to a new file :)
             worker.onmessage = event => {
-                // let move = bestMove(matrix);
-                // console.log('total calcs: %s', totalCalcs);
-
                 if(!event.data || event.data.length < 2){
                     reject('could not calculate move');
                 }

@@ -1,6 +1,7 @@
 let board = null;
 let ai = null;
 let animating = false;
+let thinking = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -13,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function onSquareClicked(y, x){
     return async function(event){
-        if(animating){
+        if(animating || thinking){
             return;
         }
 
@@ -34,8 +35,13 @@ function onSquareClicked(y, x){
             return;
         }
 
+        thinking = true;
+
         // make cpu move
         let [row, col] = await ai.getNextMove(board.getOccupiedSquares());
+
+        thinking = false;
+
         square = board.getSquare(row, col);
         await pause(500);
         square.onCpuSelect();
