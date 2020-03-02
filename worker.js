@@ -1,48 +1,48 @@
-let cache = new Map();
 let cacheHits = 0;
 let cacheMisses = 0;
+let movesPlayed = 0;
 const MAX_DEPTH = 3;
 
 onmessage = event => {
     this.checkWinner = new Function(event.data.fn.args, event.data.fn.body);
-    let move = bestMove(event.data.matrix);
-    cache = new Map();
+    this.cache = new Map();
+    bestMove(event.data.matrix);
+
     console.log('CACHE hits: %s, misses: %s', cacheHits, cacheMisses);
-    sendMove(move);
+
+    sendMove(this.move);
 }
 
 function bestMove(matrix){
     let bestScore = -Infinity;
-    let move;
 
     let squares = getSquaresToCheck(matrix);
 
     for(let i=0; i<squares.length; i++){
         let [y, x] = squares[i];
         matrix[y][x] = -1;
-        let score = minimax(matrix, 0, false);
+        let score = alphabeta(matrix, 0, -Infinity, Infinity, false);
         matrix[y][x] = 0;
 
         console.log('%s evaluated to %s', JSON.stringify([y, x]), score);
 
         if(score > bestScore){
             bestScore = score;
-            move = [y, x];
+            this.move = [y, x];
         }
     }
 
     return move;
 }
 
-function minimax(matrix, depth, isAiTurn){
+function alphabeta(matrix, depth, alpha, beta, isAiTurn){
     if(checkCache(matrix) !== false){
         return checkCache(matrix);
     }
 
     let winner = this.checkWinner(matrix);
     if(winner){
-        // return 9999 if ai wins, -9999 if human wins
-        putCache(matrix, -9999 * winner);
+        putCache(matrix, -9999*winner);
 
         return -9999 * winner;
     }
@@ -50,49 +50,36 @@ function minimax(matrix, depth, isAiTurn){
     // stop at MAX_DEPTH
     if(depth >= MAX_DEPTH){
         let eval = staticEval(matrix);
-
-        putCache(matrix, eval);
         return eval;
     }
 
     // if AI's turn, we want to maximize score
-    let bestScore = isAiTurn ? -Infinity : Infinity;
-
+    let best = isAiTurn ? -Infinity : Infinity;
     let squares = getSquaresToCheck(matrix);
+
     for(let i=0; i<squares.length; i++){
         let [y, x] = squares[i];
         matrix[y][x] = (isAiTurn ? -1 : 1);
 
-        let score = minimax(matrix, depth+1, !isAiTurn);
-        matrix[y][x] = 0;
-        bestScore = isAiTurn ? Math.max(score, bestScore) : Math.min(score, bestScore);
-    }
+        let score = alphabeta(matrix, depth+1, alpha, beta, !isAiTurn);
+        best = isAiTurn ? Math.max(score, best) : Math.min(score, best);
 
-    putCache(matrix, bestScore);
-    return bestScore;
-
-    // enhance cache by excluding depth and turn as keys
-    // since both will be the same for a given matrix key
-    function checkCache(matrix){
-        matrix = matrix.toString();
-
-        if(cache.has(matrix)){
-            cacheHits++;
-            return cache.get(matrix);
+        if(isAiTurn){
+            alpha = Math.max(alpha, best);
         } else {
-            cacheMisses++;
-            return false;
+            beta = Math.min(beta, best);
+        }
+
+        matrix[y][x] = 0;
+
+        if(alpha >= beta){
+            // console.log('alpha beta pruned at %s', JSON.stringify([y, x]));
+            break;
         }
     }
 
-    function putCache(matrix, result){
-        if(typeof result !== 'number' || isNaN(result)){
-            console.error('cannot put "%s" in cache', result);
-            return;
-        }
-
-        cache.set(matrix.toString(), result);
-    }
+    putCache(matrix, best);
+    return best;
 }
 
 function getSquaresToCheck(matrix){
@@ -249,6 +236,29 @@ function staticEval(matrix){
             return -1;
         }
     }
+}
+
+// enhance cache by excluding depth and turn as keys
+// since both will be the same for a given matrix key
+function checkCache(matrix){
+    matrix = matrix.toString();
+
+    if(this.cache.has(matrix)){
+        cacheHits++;
+        return this.cache.get(matrix);
+    } else {
+        cacheMisses++;
+        return false;
+    }
+}
+
+function putCache(matrix, result){
+    if(typeof result !== 'number' || isNaN(result)){
+        console.error('cannot put "%s" in cache', result);
+        return;
+    }
+
+    this.cache.set(matrix.toString(), result);
 }
 
 function sendMove(move){

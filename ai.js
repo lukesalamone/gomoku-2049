@@ -7,7 +7,6 @@
     *   Execute a WebWorker to prevent freezing the main UI.
 */
 let totalCalcs = 0;
-let cache = new Map();
 
 class GameAI {
     constructor(board){
@@ -18,9 +17,6 @@ class GameAI {
         return new Promise((resolve, reject) => {
 
             let matrix = this.board.getRawMatrix();
-            // let off = {};
-            // ({matrix, off} = Board.pruneMatrix(matrix, 2));
-
             let worker = new Worker('worker.js');
 
             worker.onmessage = event => {
