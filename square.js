@@ -7,6 +7,9 @@ class Square{
         this.domObj = document.createElement('div');
         this.domObj.classList.add('square');
         this.domObj.id = row + '_' + col;
+
+        //debug
+        this.domObj.title = this.domObj.id;
     }
 
     setVal(val){

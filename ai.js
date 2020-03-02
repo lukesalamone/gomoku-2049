@@ -24,15 +24,26 @@ class GameAI {
             let worker = new Worker('worker.js');
 
             worker.onmessage = event => {
-                if(!event.data || event.data.length < 2){
+                if(!event.data){
                     reject('could not calculate move');
                 }
 
-                let [y, x] = event.data;
-
-                // resolve( [y+off.y, x+off.x] );
-                resolve([y, x]);
-                worker.terminate();
+                switch(event.data.type){
+                    case 'move':
+                        let [y, x] = event.data.val;
+                        resolve([y, x]);
+                        worker.terminate();
+                        break;
+                    case 'progress':
+                        // todo
+                        break;
+                    case 'console':
+                        // todo add console messages to sidebar
+                        break;
+                    case 'debug':
+                        // debug events
+                        break;
+                }
             }
 
             worker.onError = error => {

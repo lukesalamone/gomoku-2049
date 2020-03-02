@@ -43,7 +43,6 @@ function onSquareClicked(y, x){
         document.querySelector('#board').classList.remove('thinking');
 
         square = board.getSquare(row, col);
-        await pause(500);
         square.onCpuSelect();
         winner = Board.checkWinner(board.getRawMatrix());
 
