@@ -5,6 +5,7 @@ const MAX_DEPTH = 3;
 let startTime = null;
 let timeElapsed = 0;
 let masks = {};
+let winnerCache = new Map();
 
 onmessage = event => {
     this._checkWinner = new Function(event.data.fn.args, event.data.fn.body);
@@ -276,6 +277,10 @@ function staticEval(matrix){
 }
 
 function checkWinner(matrix){
+    if(winnerCache.has(matrix)){
+        return winnerCache.get(matrix);
+    }
+
     startClock()
     let manMatrix = [];
     let cpuMatrix = [];
@@ -294,15 +299,18 @@ function checkWinner(matrix){
     }
 
     if(this._checkWinner(manMatrix, masks.h1, masks.h2, masks.v, masks.d1, masks.d2)){
+        winnerCache.set(matrix, 1);
         stopClock();
         return 1;
     }
 
     if(this._checkWinner(cpuMatrix, masks.h1, masks.h2, masks.v, masks.d1, masks.d2)){
+        winnerCache.set(matrix, -1);
         stopClock();
         return -1;
     }
 
+    winnerCache.set(matrix, 0);
     stopClock();
     return 0;
 }
