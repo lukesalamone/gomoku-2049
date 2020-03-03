@@ -17,6 +17,8 @@ class GameAI {
         return new Promise((resolve, reject) => {
 
             let matrix = this.board.getRawMatrix();
+            let off = null;
+            ({matrix, off} = Board.pruneMatrix(matrix, 5));
             let worker = new Worker('worker.js');
 
             worker.onmessage = event => {
@@ -27,11 +29,14 @@ class GameAI {
                 switch(event.data.type){
                     case 'move':
                         let [y, x] = event.data.val;
-                        resolve([y, x]);
+                        resolve([y+off.y, x+off.x]);
                         worker.terminate();
                         break;
                     case 'progress':
-                        // todo
+                        let percent = event.data.val.completed * 100;
+                        percent /= event.data.val.total;
+                        percent = Math.round(percent);
+                        document.dispatchEvent(new CustomEvent("progress", {"detail": percent}));
                         break;
                     case 'console':
                         // todo add console messages to sidebar
@@ -48,7 +53,7 @@ class GameAI {
 
             worker.postMessage({
                 matrix: matrix,
-                fn: serializedFn(Board.checkWinner)
+                fn: serializedFn(Board.checkWinner3)
             });
         });
 

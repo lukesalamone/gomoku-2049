@@ -157,6 +157,59 @@ class Board{
         };
     }
 
+    static checkWinner3(matrix, hMask1, hMask2, vMask, dMask1, dMask2){
+        // flatten matrix
+        matrix = [].concat.apply([], [...matrix]);
+
+        for(let i=0; i<matrix.length; i++){
+            if(matchMask(matrix, hMask1, i)) return 1;
+            if(matchMask(matrix, hMask2, i)) return 1;
+            if(matchMask(matrix, vMask, i)) return 1;
+            if(matchMask(matrix, dMask1, i)) return 1;
+            if(matchMask(matrix, dMask2, i)) return 1;
+        }
+
+        return 0;
+
+        function matchMask(matrix, mask, start){
+            if(matrix.length < mask.length + start){
+                return false;
+            }
+
+            for(let i=0; i<mask.length; i++){
+                if(mask[i] && !matrix[start+i]) return false;
+            }
+
+            return true;
+        }
+    }
+
+
+    // enhance with bitmasks
+    static checkWinner2(matrix){
+        const IN_A_ROW = 5;
+
+        // move masks across matrix and check for matches
+        for(let i=0; i<matrix.length-IN_A_ROW; i++){    // i = 0 -> 14
+            for(let j=0; j<matrix[i].length; j++){      // j = 0 -> 19
+                let resH = 1, resV = 1, resD1 = 1, resD2 = 1;
+
+                for(let k=0; k<IN_A_ROW; k++){
+                    resH &= matrix[j][i+1+k];
+                    resV &= matrix[i+1+k][j];
+                    resD1 &= matrix[i+k][j+k];
+                    resD2 &= matrix[i+k][j+4-k];
+                }
+
+                if(resH || resV || resD1 || resD2) return 1;
+            }
+        }
+
+        return 0;
+    }
+
+
+
     // return 1 if human wins, -1 if AI wins, 0 for no winner
     static checkWinner(matrix){
         for(let i=0; i<matrix.length; i++){

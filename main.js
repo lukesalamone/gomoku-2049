@@ -8,6 +8,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelector('#about').onclick = openAbout;
     document.querySelector('.overlay .close').onclick = closeAbout;
     document.querySelector('#play-again').onclick = onNewGameClicked;
+    document.addEventListener('progress', e => {
+        let percent = e.detail;
+
+        if(!percent){
+            document.querySelector('#progress').classList.remove('slide');
+        } else {
+            document.querySelector('#progress').classList.add('slide');
+        }
+
+        document.querySelector('#progress').style.width = percent + '%';
+    });
+
+    fetch('timestamp').then(response => {
+        return response.json();
+    }).then(data => {
+        let str = new Date(data).toLocaleDateString('en-GB', {
+                        day: 'numeric', month: 'numeric', year: 'numeric'
+                    }).replace(/\//g, '-');
+        document.querySelector('#timestamp').textContent = str;
+    });
 
     resetGame();
 });
@@ -36,6 +56,7 @@ function onSquareClicked(y, x){
         }
 
         document.querySelector('#board').classList.add('thinking');
+        document.dispatchEvent(new CustomEvent("progress", {"detail": 0}));
 
         // make cpu move
         let [row, col] = await ai.getNextMove(board.getOccupiedSquares());

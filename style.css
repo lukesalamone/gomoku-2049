@@ -21,6 +21,29 @@ body {
     margin: -130px auto 0;
 }
 
+#progress-container {
+    width: 621px;
+    height: 20px;
+    margin: -20px auto 30px;
+}
+
+#progress-background {
+    width: 90%;
+    margin: 0 auto;
+    height: 3px;
+    background-color: #4d004c;
+}
+
+#progress {
+    height: 100%;
+    width: 100%;
+    background-color: #f0f;
+}
+
+.slide {
+    transition: width 0.5s linear 0s;
+}
+
 #board {
     width: 621px;
     height: 621px;
